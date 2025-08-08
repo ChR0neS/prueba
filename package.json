@@ -1,1 +1,33 @@
+{
+  "name": "pdf-translator",
+  "version": "1.0.0",
+  "description": "Pipeline para extraer, traducir y reconstruir PDFs preservando formato y posiciones.",
+  "main": "main.js",
+  "type": "module",
+  "scripts": {
+    "start": "node main.js",
+    "dev": "nodemon main.js",
+    "clean": "rm -rf temp/images output/*"
+  },
+  "keywords": [
+    "pdf",
+    "translator",
+    "ocr",
+    "nodejs",
+    "pdf-lib",
+    "openai"
+  ],
+  "author": "E",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.0",
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^4.2.67",
+    "tesseract.js": "^5.1.0",
+    "openai": "^4.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.3"
+  }
+}
 
