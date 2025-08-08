@@ -1,1 +1,64 @@
+// src/extract/ocr.js
+import fs from "fs";
+import path from "path";
+import Tesseract from "tesseract.js";
 
+/**
+ * Aplica OCR a una imagen y devuelve el texto con coordenadas.
+ * @param {string} imagePath - Ruta de la imagen a procesar.
+ * @param {number} pageNum - Página del PDF donde estaba la imagen.
+ * @returns {Promise<Array>} Lista de palabras detectadas con posición y estilos básicos.
+ */
+export async function runOCR(imagePath, pageNum = 1) {
+    try {
+        const absolutePath = path.resolve(imagePath);
+        if (!fs.existsSync(absolutePath)) {
+            throw new Error(`Imagen no encontrada: ${absolutePath}`);
+        }
+
+        const { data } = await Tesseract.recognize(absolutePath, "eng", {
+            logger: (m) => {} // Si quieres ver el progreso: console.log(m)
+        });
+
+        // Convertimos el resultado de Tesseract en una estructura compatible con extractText
+        let ocrData = [];
+
+        data.words.forEach(word => {
+            ocrData.push({
+                texto: word.text.trim(),
+                pos: {
+                    x: word.bbox.x0,
+                    y: word.bbox.y0
+                },
+                estilo: {
+                    fontSize: word.bbox.y1 - word.bbox.y0, // altura aproximada
+                    fontName: "OCR"
+                },
+                pagina: pageNum
+            });
+        });
+
+        console.log(`✅ OCR completado para ${path.basename(imagePath)} (${ocrData.length} palabras)`);
+        return ocrData;
+
+    } catch (error) {
+        console.error("❌ Error en OCR:", error.message);
+        throw error;
+    }
+}
+
+/**
+ * Procesa una lista de imágenes extraídas del PDF y devuelve el texto detectado.
+ * @param {Array} imagesList - Lista de objetos { page, path } de extractImages.js
+ * @returns {Promise<Array>} Lista combinada de resultados OCR.
+ */
+export async function runBatchOCR(imagesList) {
+    let allResults = [];
+
+    for (const img of imagesList) {
+        const textData = await runOCR(img.path, img.page);
+        allResults = allResults.concat(textData);
+    }
+
+    return allResults;
+}
